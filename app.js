@@ -100,25 +100,31 @@ class imissyou {
     }
     
     updateStatusMessage() {
-        const lastInteractionTime = localStorage.getItem(this.storageKeys.lastInteraction);
-        const nextReminderTime = localStorage.getItem(this.storageKeys.nextReminderTime);
-        const now = Date.now();
-        
-        if (!lastInteractionTime) {
-            this.showMessage('Welcome! Click "Check In" to start tracking.', 'info');
-            return;
-        }
-        
-        const daysSinceLastInteraction = (now - parseInt(lastInteractionTime)) / (24 * 60 * 60 * 1000);
-        
-        if (daysSinceLastInteraction < 1) {
-            this.showMessage('You checked in recently. All good!', 'success');
+        try {
+            const lastInteractionTime = localStorage.getItem(this.storageKeys.lastInteraction);
+            const nextReminderTime = localStorage.getItem(this.storageKeys.nextReminderTime);
+            const now = Date.now();
+            
+            if (!lastInteractionTime) {
+                this.showMessage('Welcome! Click "Check In" to start tracking.', 'info');
+                return;
+            }
+            
+            const daysSinceLastInteraction = (now - parseInt(lastInteractionTime)) / (24 * 60 * 60 * 1000);
+            
+            if (daysSinceLastInteraction < 1) {
+                this.showMessage('You checked in recently. All good!', 'success');
+            } 
+            else if (daysSinceLastInteraction < 3) {
+                this.showMessage(`It's been ${Math.floor(daysSinceLastInteraction)} day(s). Still within range!`, 'info');
+            } 
+            else {
+                this.showMessage(`It's been ${Math.floor(daysSinceLastInteraction)} day(s) since your last check-in. Missing you!`, 'warning');
+            }
         } 
-        else if (daysSinceLastInteraction < 3) {
-            this.showMessage(`It's been ${Math.floor(daysSinceLastInteraction)} day(s). Still within range!`, 'info');
-        } 
-        else {
-            this.showMessage(`It's been ${Math.floor(daysSinceLastInteraction)} day(s) since your last check-in. Missing you!`, 'warning');
+        catch (error) {
+            console.error('Error updating status message:', error);
+            this.showMessage('Something went wrong. Please check the console for details.', 'danger');
         }
     }
     
@@ -179,7 +185,7 @@ class imissyou {
         this.elements.testEmailBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Sending...';
         
         try {
-            const message = "This is a test message from your Missing You app!\n\nIf you received this, everything is working perfectly. The app will automatically send sweet reminders when we haven't connected for a while.\n\nWith love,\nYour Missing You App";
+            const message = "This is a test message from your Missing You app!\n\nIf you received this, everything is working perfectly. The app will automatically send sweet reminders when we haven't connected for a while.\n\nWith love,\nAdriaan Dimate";
             
             const templateParams = {
                 to_email: this.recipientEmail,
@@ -221,35 +227,46 @@ class imissyou {
     }
     
     showMessage(text, type = 'info') {
-        this.elements.statusMessage.className = `alert alert-${type} mb-4`;
-        this.elements.statusMessage.innerHTML = `<p class="mb-0">${text}</p>`;
+        try {
+            this.elements.statusMessage.className = `alert alert-${type} mb-4`;
+            this.elements.statusMessage.innerHTML = `<p class="mb-0">${text}</p>`;
+        } 
+        catch (error) {
+            console.error('Error displaying message:', error);
+        }
     }
     
 
 
     formatRelativeTime(date) {
-        const now = new Date();
-        const diffInSeconds = Math.floor((now - date) / 1000);
-        
-        if (diffInSeconds < 60) {
-            return 'Just now';
-        } 
-        else if (diffInSeconds < 3600) {
-            const minutes = Math.floor(diffInSeconds / 60);
-            return `${minutes} minute${minutes > 1 ? 's' : ''} ago`;
-        } 
-        else if (diffInSeconds < 86400) {
-            const hours = Math.floor(diffInSeconds / 3600);
-            return `${hours} hour${hours > 1 ? 's' : ''} ago`;
-        } 
-        else {
-            const days = Math.floor(diffInSeconds / 86400);
-            if (days < 7) {
-                return `${days} day${days > 1 ? 's' : ''} ago`;
+        try {
+            const now = new Date();
+            const diffInSeconds = Math.floor((now - date) / 1000);
+            
+            if (diffInSeconds < 60) {
+                return 'Just now';
+            } 
+            else if (diffInSeconds < 3600) {
+                const minutes = Math.floor(diffInSeconds / 60);
+                return `${minutes} minute${minutes > 1 ? 's' : ''} ago`;
+            } 
+            else if (diffInSeconds < 86400) {
+                const hours = Math.floor(diffInSeconds / 3600);
+                return `${hours} hour${hours > 1 ? 's' : ''} ago`;
             } 
             else {
-                return date.toLocaleDateString();
+                const days = Math.floor(diffInSeconds / 86400);
+                if (days < 7) {
+                    return `${days} day${days > 1 ? 's' : ''} ago`;
+                } 
+                else {
+                    return date.toLocaleDateString();
+                }
             }
+        } 
+        catch (error) {
+            console.error('Error formatting relative time:', error);
+            return 'Unknown time';
         }
     }
 }
