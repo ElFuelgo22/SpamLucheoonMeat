@@ -6,7 +6,7 @@ const CONFIG = {
         templateId: 'template_lsn8z7p'
     },
     recipient: {
-        email: 'aadimate55@gmail.com', // UPDATE THIS WITH MARY'S REAL EMAIL
+        email: 'marychansoberano394@email.com', // UPDATE THIS WITH MARY'S REAL EMAIL
         name: 'Mary Chan Soberanno'
     }
 };
