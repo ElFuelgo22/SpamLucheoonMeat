@@ -67,13 +67,20 @@ class imissyou {
     }
     
     generateNextReminderTime() {
-        // 3-5 days randomizer
-        const minDays = 3;
-        const maxDays = 5;
-        const randomDays = Math.random() * (maxDays - minDays) + minDays;
-        const millisecondsPerDay = 24 * 60 * 60 * 1000;
-        
-        return Date.now() + (randomDays * millisecondsPerDay);
+        try {
+            // randomizer
+            const minDays = 3;
+            const maxDays = 5;
+            const randomDays = Math.random() * (maxDays - minDays) + minDays;
+            const millisecondsPerDay = 24 * 60 * 60 * 1000;
+            
+            return Date.now() + (randomDays * millisecondsPerDay);
+        } 
+        catch (error) {
+            console.error('Error generating next reminder time:', error);
+            // 4 days if the error occurs
+            return Date.now() + (4 * 24 * 60 * 60 * 1000);
+        }
     }
     
     updateUI() {
@@ -129,25 +136,53 @@ class imissyou {
     }
     
     startBackgroundChecker() {
-        setInterval(() => {
+        try {
+            setInterval(() => {
+                try {
+                    this.checkIfReminderNeeded();
+                    this.updateUI();
+                } 
+                catch (error) {
+                    console.error('Error in background checker interval:', error);
+                }
+            }, 60 * 60 * 1000);
+            
             this.checkIfReminderNeeded();
-            this.updateUI();
-        }, 60 * 60 * 1000);
-        this.checkIfReminderNeeded();
+        } 
+        catch (error) {
+            console.error('Error starting background checker:', error);
+        }
     }
     
+    // checks if a reminder email needs to be sent or no
     checkIfReminderNeeded() {
-        const lastInteractionTime = localStorage.getItem(this.storageKeys.lastInteraction);
-        const nextReminderTime = localStorage.getItem(this.storageKeys.nextReminderTime);
-        const emailSent = localStorage.getItem(this.storageKeys.emailSent);
-        const now = Date.now();
-        
-        if (!lastInteractionTime || !nextReminderTime || emailSent) {
-            return;
-        }
-        
-        if (now >= parseInt(nextReminderTime)) {
-            this.sendReminderEmail();
+        try {
+            const lastInteractionTime = localStorage.getItem(this.storageKeys.lastInteraction);
+            const nextReminderTime = localStorage.getItem(this.storageKeys.nextReminderTime);
+            const emailSent = localStorage.getItem(this.storageKeys.emailSent);
+            const now = Date.now();
+            
+            if (!lastInteractionTime || !nextReminderTime || emailSent) {
+                return;
+            }
+            
+            try {
+                if (now >= parseInt(nextReminderTime)) {
+                    this.sendReminderEmail();
+                }
+            } 
+            catch (error) {
+                console.error('Error parsing next reminder time:', error);
+                // reset corrupted reminder time
+                localStorage.removeItem(this.storageKeys.nextReminderTime);
+                this.showMessage('Reminder time was corrupted. Resetting to a new reminder.', 'warning');
+                // generate a new reminder time
+                const newReminderTime = this.generateNextReminderTime();
+                localStorage.setItem(this.storageKeys.nextReminderTime, newReminderTime.toString());
+            }
+        } 
+        catch (error) {
+            console.error('Error checking if reminder is needed:', error);
         }
     }
     
