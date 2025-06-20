@@ -135,6 +135,7 @@ class imissyou {
         }
     }
     
+    // initializes the background checker that runs every hour hehe
     startBackgroundChecker() {
         try {
             setInterval(() => {
@@ -154,7 +155,8 @@ class imissyou {
         }
     }
     
-    // checks if a reminder email needs to be sent or no
+    // checks if a reminder email needs to be sent or not
+    // if the next reminder time is reached, it sends an email
     checkIfReminderNeeded() {
         try {
             const lastInteractionTime = localStorage.getItem(this.storageKeys.lastInteraction);
